@@ -34,7 +34,7 @@ export const DeleteButton = ({
     disabled,
 }: {
     id: string;
-    disabled: boolean;
+    disabled?: boolean;
 }) => {
     const [isPending, startTransition] = useTransition();
     const router = useRouter();

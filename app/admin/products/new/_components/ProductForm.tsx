@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
-export default function ProductForm({ product }: { product: Product | null }) {
+export default function ProductForm({ product }: { product?: Product | null }) {
     const [error, action] = useFormState(
         !product ? addProduct : updateProduct.bind(null, product.id),
         {}

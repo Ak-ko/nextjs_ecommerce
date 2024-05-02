@@ -7,27 +7,31 @@ import { ArrowRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductSkeleton from "@/components/ProductSkeleton";
 import { Suspense } from "react";
+import { wait } from "@/helpers";
+import ProductGrid from "@/components/ProductGrid";
+import { cache } from "@/lib/cache";
 
-const wait = async (duration: number) =>
-    new Promise((resolve) => setTimeout(resolve, duration));
+const getMostPopularProducts = cache(
+    () => {
+        return db.product.findMany({
+            where: { isAvailableForPurchase: true },
+            orderBy: { order: { _count: "desc" } },
+            take: 6,
+        });
+    },
+    ["/", "getMostPopularProducts"],
+    {
+        revalidate: 60 * 60 * 24,
+    }
+);
 
-async function getMostPopularProducts() {
-    await wait(500);
-    return await db.product.findMany({
-        where: { isAvailableForPurchase: true },
-        orderBy: { order: { _count: "desc" } },
-        take: 6,
-    });
-}
-
-async function getLatestProducts() {
-    await wait(1000);
-    return await db.product.findMany({
+const getLatestProducts = cache(() => {
+    return db.product.findMany({
         where: { isAvailableForPurchase: true },
         orderBy: { createdAt: "desc" },
         take: 6,
     });
-}
+}, ["/", "getLatestProducts"]);
 
 export default function CustomerHome() {
     return (
@@ -43,7 +47,7 @@ export default function CustomerHome() {
         </>
     );
 }
-async function ProductGridSection({
+function ProductGridSection({
     productFetcher,
     title,
 }: {
@@ -61,7 +65,7 @@ async function ProductGridSection({
                     </Link>
                 </Button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <ProductGrid>
                 <Suspense
                     fallback={
                         <>
@@ -73,7 +77,7 @@ async function ProductGridSection({
                 >
                     <ProductSuspense productFetcher={productFetcher} />
                 </Suspense>
-            </div>
+            </ProductGrid>
         </>
     );
 }

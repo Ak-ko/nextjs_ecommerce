@@ -24,6 +24,7 @@ import {
     ActiveStatusToggleButton,
     DeleteButton,
 } from "./_components/DropDownActionButtons";
+import { deleteProduct } from "../_actions/products";
 
 export default function AdminProducts() {
     return (

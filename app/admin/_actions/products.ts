@@ -5,6 +5,7 @@ import { z } from "zod";
 import fs from "fs/promises";
 import crypto from "crypto";
 import { notFound, redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 const fileSchema = z.instanceof(File, { message: "Required" });
 const imageSchema = fileSchema;
@@ -52,6 +53,7 @@ export const addProduct = async (prevState: unknown, formData: FormData) => {
             imagePath,
         },
     });
+    revalidatingClientRoutes();
     redirect("/admin/products");
 };
 
@@ -105,6 +107,7 @@ export const updateProduct = async (
             imagePath,
         },
     });
+    revalidatingClientRoutes();
     redirect("/admin/products");
 };
 
@@ -118,11 +121,18 @@ export const toggleActiveStatus = async (
             isAvailableForPurchase,
         },
     });
+    revalidatingClientRoutes();
 };
 
 export const deleteProduct = async (id: string) => {
     let product = await db.product.delete({ where: { id } });
+    revalidatingClientRoutes();
     if (!product) return notFound();
     await fs.unlink(product.filePath);
     await fs.unlink(`public${product.imagePath}`);
 };
+
+function revalidatingClientRoutes() {
+    revalidatePath("/");
+    revalidatePath("/products");
+}
